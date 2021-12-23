@@ -23,6 +23,7 @@ struct Config {
     input_path: PathBuf,
     #[serde(with = "parse_pathbuf")]
     output_path: PathBuf,
+    flatten: bool,
     read_delay_ms: u64,
     long_side_limit: u32,
     smoothing_factor: u8,
@@ -43,11 +44,17 @@ fn is_png(f: &Path) -> bool {
 fn get_into_path(from: &Path) -> PathBuf {
     let c = CONFIG.get().unwrap();
 
+    let from_pathbuf = PathBuf::from(&from);
+
     c.output_path.join(
-        PathBuf::from(from)
-            .strip_prefix(&c.input_path)
-            .expect("Failed to strip path")
-            .with_extension("jpg"),
+        if c.flatten {
+            Path::new(from.file_name().expect("Failed to get filename"))
+        } else {
+            from_pathbuf
+                .strip_prefix(&c.input_path)
+                .expect("Failed to strip path")
+        }
+        .with_extension("jpg"),
     )
 }
 

@@ -1,6 +1,7 @@
 # I/O Directory Path (absolute or relative from home dir)
 input_path: ./Pictures/VRChat
 output_path: ./Pictures/VRChat.cmp
+flatten: false
 
 # MozJPEG's options (0~100)
 smoothing_factor: 33
@@ -8,7 +9,7 @@ quality: 95
 
 # Limitation of image long side in px
 #   0: unlimit
-long_side_limit: 1920
+long_side_limit: 0
 
 # How many wokers
 #   0: auto (same as logical cores count)
