@@ -1,7 +1,11 @@
 # I/O Directory Path (absolute or relative from home dir)
-input_path: ./Pictures/VRChat
-#output_path: ./Pictures/VRChat.cmp
-output_path: C:\Users\user\VRChat.cmp
+input_path: .\Pictures\VRChat
+output_path: .\Pictures\VRChat_JPG
+
+# Other Example
+#output_path: .\OneDrive\VRChat_JPG
+#output_path: D:\Users\user\OneDrive\VRChat_JPG
+
 flatten: false
 
 # MozJPEG's options (0~100)
