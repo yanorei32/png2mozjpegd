@@ -195,6 +195,8 @@ async fn main() {
         .watch(&c.input_path, RecursiveMode::Recursive)
         .expect("Failed to watch input directory");
 
+    println!("Wait for new file... (Press Ctrl+C to exit)");
+
     loop {
         match rx.recv() {
             Ok(event) => {
