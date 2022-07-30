@@ -1,6 +1,7 @@
 # I/O Directory Path (absolute or relative from home dir)
 input_path: ./Pictures/VRChat
-output_path: ./Pictures/VRChat.cmp
+#output_path: ./Pictures/VRChat.cmp
+output_path: C:\Users\user\VRChat.cmp
 flatten: false
 
 # MozJPEG's options (0~100)
@@ -18,3 +19,5 @@ thread_count: 0
 # read delay (in ms)
 read_delay_ms: 1000
 
+# mode: Oneshot or Daemon
+mode: Daemon

@@ -28,8 +28,15 @@ struct Config {
     long_side_limit: u32,
     smoothing_factor: u8,
     quality: f32,
+    mode: Mode,
     #[serde(with = "parse_thread_count")]
     thread_count: usize,
+}
+
+#[derive(Debug, Deserialize, PartialEq)]
+enum Mode {
+    Oneshot,
+    Daemon,
 }
 
 static CONFIG: OnceCell<Config> = OnceCell::new();
@@ -130,11 +137,17 @@ fn process_image(from: &Path, into: &Path) {
 
 #[tokio::main]
 async fn main() {
-    if env::args().len() != 2 {
-        panic!("please set configuration yaml file");
-    }
+    let config_path = env::args()
+        .nth(1)
+        .map(|v| PathBuf::from(v))
+        .unwrap_or_else(|| {
+            let mut buf = env::current_exe().unwrap();
+            buf.pop();
+            buf.push("config.yml");
+            buf
+        });
 
-    let config_path = PathBuf::from(env::args().nth(1).unwrap());
+    println!("{}", config_path.clone().into_os_string().to_string_lossy());
 
     CONFIG
         .set(
@@ -148,10 +161,6 @@ async fn main() {
     let c = CONFIG.get().unwrap();
 
     if !c.output_path.is_dir() {
-        if !c.output_path.parent().unwrap().is_dir() {
-            panic!("Failed to lookup output directory");
-        }
-
         std::fs::create_dir_all(&c.output_path).expect("Failed to create output directory");
     }
 
@@ -173,6 +182,10 @@ async fn main() {
                 process_image(&from, &into);
             });
         });
+
+    if c.mode == Mode::Oneshot {
+        return;
+    }
 
     let (tx, rx) = channel();
 
