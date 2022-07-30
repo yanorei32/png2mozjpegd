@@ -63,7 +63,7 @@ jobs:
 
       - run: |
           mkdir png2mozjpegd
-          cp CREDITS LICENSE README.md png2mozjpegd/
+          cp config.yml CREDITS LICENSE README.md png2mozjpegd/
           cp target/x86_64-pc-windows-gnu/release/png2mozjpegd.exe png2mozjpegd/
           zip -r png2mozjpegd-windows.zip png2mozjpegd
           rm png2mozjpegd/*.exe
