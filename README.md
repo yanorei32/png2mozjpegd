@@ -1,1 +1,4 @@
-# png2mozjpegd
+# png2mozjpegd 
+PNG to MozJPEG daemon.
+
+
