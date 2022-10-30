@@ -120,7 +120,7 @@ fn process_image(from: &Path, into: &Path) {
         comp.set_color_space(mozjpeg::ColorSpace::JCS_YCbCr);
         comp.set_mem_dest();
         comp.start_compress();
-        assert!(comp.write_scanlines(&im.to_vec()));
+        assert!(comp.write_scanlines(&im));
         comp.finish_compress();
         comp.data_to_vec().unwrap()
     })
@@ -133,22 +133,19 @@ fn process_image(from: &Path, into: &Path) {
 
 #[tokio::main]
 async fn main() {
-    let config_path = env::args()
-        .nth(1)
-        .map(|v| PathBuf::from(v))
-        .unwrap_or_else(|| {
-            let mut buf = env::current_exe().unwrap();
-            buf.pop();
-            buf.push("config.yml");
-            buf
-        });
+    let config_path = env::args().nth(1).map(PathBuf::from).unwrap_or_else(|| {
+        let mut buf = env::current_exe().unwrap();
+        buf.pop();
+        buf.push("config.yml");
+        buf
+    });
 
     println!("{}", config_path.clone().into_os_string().to_string_lossy());
 
     CONFIG
         .set(
             serde_yaml::from_reader(BufReader::new(
-                File::open(config_path).expect("Failed to open config.yml"),
+                File::open(&config_path).expect("Failed to open config.yml"),
             ))
             .expect("Failed to parse CONFIG"),
         )
