@@ -8,7 +8,7 @@ use std::sync::mpsc::channel;
 use std::time::Duration;
 
 use image::GenericImageView;
-use notify::{watcher, DebouncedEvent, RecursiveMode, Watcher};
+use notify::{EventKind, RecommendedWatcher, RecursiveMode, Watcher};
 use once_cell::sync::OnceCell;
 use serde::{self, Deserialize};
 use tokio::{runtime, time::sleep};
@@ -84,10 +84,6 @@ fn scale_down(size: (u32, u32), long_side_limit: u32) -> (u32, u32) {
 }
 
 fn process_image(from: &Path, into: &Path) {
-    if !is_png(from) {
-        return;
-    }
-
     if into.exists() {
         return;
     }
@@ -189,7 +185,8 @@ async fn main() {
 
     let (tx, rx) = channel();
 
-    let mut watcher = watcher(tx, Duration::from_secs(1)).expect("Failed to create watcher");
+    let mut watcher =
+        RecommendedWatcher::new(tx, notify::Config::default()).expect("Failed to create watcher");
 
     watcher
         .watch(&c.input_path, RecursiveMode::Recursive)
@@ -197,20 +194,25 @@ async fn main() {
 
     println!("Wait for new file... (Press Ctrl+C to exit)");
 
-    loop {
-        match rx.recv() {
+    for res in rx {
+        match res {
             Ok(event) => {
-                if let DebouncedEvent::Create(event) = event {
-                    let from = event.as_path().to_owned();
-                    let into = get_into_path(&from);
+                if let EventKind::Create(_) = event.kind {
+                    event
+                        .paths
+                        .into_iter()
+                        .filter(|v| is_png(v))
+                        .for_each(|from| {
+                            let into = get_into_path(&from);
 
-                    rt.spawn(async move {
-                        sleep(Duration::from_millis(c.read_delay_ms)).await;
-                        process_image(&from, &into);
-                    });
+                            rt.spawn(async move {
+                                sleep(Duration::from_millis(c.read_delay_ms)).await;
+                                process_image(&from, &into);
+                            });
+                        });
                 }
             }
-            Err(e) => panic!("Error: {:?}", e),
+            Err(e) => eprintln!("Watch Error: {:?}", e),
         }
     }
 }
