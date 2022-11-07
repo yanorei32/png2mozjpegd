@@ -10,36 +10,12 @@ use std::time::Duration;
 use image::GenericImageView;
 use notify::{EventKind, RecommendedWatcher, RecursiveMode, Watcher};
 use once_cell::sync::OnceCell;
-use serde::{self, Deserialize};
 use tokio::{runtime, time::sleep};
 use walkdir::WalkDir;
 
-mod parse_pathbuf;
-mod parse_thread_count;
+mod model;
 
-#[derive(Debug, Deserialize)]
-struct Config {
-    #[serde(with = "parse_pathbuf")]
-    input_path: PathBuf,
-    #[serde(with = "parse_pathbuf")]
-    output_path: PathBuf,
-    flatten: bool,
-    read_delay_ms: u64,
-    long_side_limit: u32,
-    smoothing_factor: u8,
-    quality: f32,
-    mode: Mode,
-    #[serde(with = "parse_thread_count")]
-    thread_count: usize,
-}
-
-#[derive(Debug, Deserialize, PartialEq)]
-enum Mode {
-    Oneshot,
-    Daemon,
-}
-
-static CONFIG: OnceCell<Config> = OnceCell::new();
+static CONFIG: OnceCell<model::Config> = OnceCell::new();
 
 fn is_png(f: &Path) -> bool {
     match f.extension() {
@@ -48,7 +24,7 @@ fn is_png(f: &Path) -> bool {
     }
 }
 
-fn get_into_path(from: &Path) -> PathBuf {
+fn newfname_from_origfname(from: &Path) -> PathBuf {
     let c = CONFIG.get().unwrap();
 
     let from_pathbuf = PathBuf::from(&from);
@@ -65,7 +41,7 @@ fn get_into_path(from: &Path) -> PathBuf {
     )
 }
 
-fn scale_down(size: (u32, u32), long_side_limit: u32) -> (u32, u32) {
+fn calc_new_dimensions(size: (u32, u32), long_side_limit: u32) -> (u32, u32) {
     if long_side_limit == 0 {
         return size;
     }
@@ -105,10 +81,10 @@ fn process_image(from: &Path, into: &Path) {
             .strip_prefix(&c.input_path)
             .expect("Failed to get relative filepath")
             .to_str()
-            .expect("Failed to convert filename to str")
+            .unwrap()
     );
 
-    let dimensions = scale_down(im.dimensions(), c.long_side_limit);
+    let dimensions = calc_new_dimensions(im.dimensions(), c.long_side_limit);
     let im = im.thumbnail(dimensions.0, dimensions.1);
     let im = im.into_rgb8();
 
@@ -169,14 +145,14 @@ async fn main() {
         .filter(|f| is_png(f.path()))
         .for_each(|from| {
             let from = from.path().to_owned();
-            let into = get_into_path(&from);
+            let into = newfname_from_origfname(&from);
 
             rt.spawn(async move {
                 process_image(&from, &into);
             });
         });
 
-    if c.mode == Mode::Oneshot {
+    if let model::Mode::Oneshot = c.mode {
         return;
     }
 
@@ -192,24 +168,29 @@ async fn main() {
     println!("Wait for new file... (Press Ctrl+C to exit)");
 
     for res in rx {
-        match res {
-            Ok(event) => {
-                if let EventKind::Create(_) = event.kind {
-                    event
-                        .paths
-                        .into_iter()
-                        .filter(|v| is_png(v))
-                        .for_each(|from| {
-                            let into = get_into_path(&from);
-
-                            rt.spawn(async move {
-                                sleep(Duration::from_millis(c.read_delay_ms)).await;
-                                process_image(&from, &into);
-                            });
-                        });
-                }
+        let event = match res {
+            Ok(v) => v,
+            Err(e) => {
+                eprintln!("Watch Error: {:?}", e);
+                continue;
             }
-            Err(e) => eprintln!("Watch Error: {:?}", e),
-        }
+        };
+
+        let EventKind::Create(_) = event.kind else {
+            continue
+        };
+
+        event
+            .paths
+            .into_iter()
+            .filter(|v| is_png(v))
+            .for_each(|from| {
+                let into = newfname_from_origfname(&from);
+
+                rt.spawn(async move {
+                    sleep(Duration::from_millis(c.read_delay_ms)).await;
+                    process_image(&from, &into);
+                });
+            });
     }
 }
