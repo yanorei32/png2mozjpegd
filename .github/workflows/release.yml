@@ -62,6 +62,13 @@ jobs:
           args: --release --target x86_64-pc-windows-gnu
 
       - run: |
+          cargo license \
+            --authors \
+            --do-not-bundle \
+            --avoid-dev-deps \
+            --avoid-build-deps \
+            --filter-platform x86_64-pc-windows-gnu \
+              > png2mozjpegd/CREDITS
           mkdir png2mozjpegd
           VERSION_NAME=${GITHUB_REF##*/}
           if [[ $VERSION_NAME == "master" ]]; then
@@ -75,6 +82,13 @@ jobs:
           cp target/x86_64-pc-windows-gnu/release/png2mozjpegd.exe png2mozjpegd/
           zip -r png2mozjpegd-windows.zip png2mozjpegd
           rm png2mozjpegd/*.{exe,bat}
+          cargo license \
+            --authors \
+            --do-not-bundle \
+            --avoid-dev-deps \
+            --avoid-build-deps \
+            --filter-platform x86_64-unknown-linux-gnu \
+              > png2mozjpegd/CREDITS
           cp target/x86_64-unknown-linux-musl/release/png2mozjpegd png2mozjpegd/
           zip -r png2mozjpegd-linux.zip png2mozjpegd
 
