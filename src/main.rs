@@ -1,3 +1,5 @@
+#![warn(clippy::pedantic, clippy::nursery)]
+
 use std::cmp;
 use std::env;
 use std::ffi::OsStr;
@@ -18,10 +20,7 @@ mod model;
 static CONFIG: OnceCell<model::Config> = OnceCell::new();
 
 fn is_png(f: &Path) -> bool {
-    match f.extension() {
-        Some(ext) => ext == OsStr::new("png"),
-        _ => false,
-    }
+    f.extension().map_or(false, |ext| ext == OsStr::new("png"))
 }
 
 fn newfname_from_origfname(from: &Path) -> PathBuf {
@@ -42,20 +41,23 @@ fn newfname_from_origfname(from: &Path) -> PathBuf {
 }
 
 fn calc_new_dimensions(size: (u32, u32), long_side_limit: u32) -> (u32, u32) {
+    #![allow(clippy::cast_sign_loss)]
+    #![allow(clippy::cast_possible_truncation)]
+
     if long_side_limit == 0 {
         return size;
     }
 
-    let long_side = cmp::max(size.0, size.1) as f64;
-    let scale = long_side_limit as f64 / long_side;
+    let long_side = f64::from(cmp::max(size.0, size.1));
+    let scale = f64::from(long_side_limit) / long_side;
 
     if 1.0 <= scale {
         return size;
     }
 
     (
-        (size.0 as f64 * scale) as u32,
-        (size.1 as f64 * scale) as u32,
+        (f64::from(size.0) * scale) as u32,
+        (f64::from(size.1) * scale) as u32,
     )
 }
 
@@ -64,7 +66,7 @@ fn process_image(from: &Path, into: &Path) {
         return;
     }
 
-    let im = image::open(&from).expect("Failed to open original file");
+    let im = image::open(from).expect("Failed to open original file");
 
     std::fs::create_dir_all(
         PathBuf::from(into)
@@ -102,19 +104,22 @@ fn process_image(from: &Path, into: &Path) {
     })
     .expect("MozJPEG Fail");
 
-    let mut f = File::create(&into).expect("Failed to create output file");
+    let mut f = File::create(into).expect("Failed to create output file");
     f.write_all(&jpeg_bytes).expect("Failed to write file");
     f.flush().expect("Failed to flush file");
 }
 
 #[tokio::main]
 async fn main() {
-    let config_path = env::args().nth(1).map(PathBuf::from).unwrap_or_else(|| {
-        let mut buf = env::current_exe().unwrap();
-        buf.pop();
-        buf.push("config.yml");
-        buf
-    });
+    let config_path = env::args().nth(1).map_or_else(
+        || {
+            let mut buf = env::current_exe().unwrap();
+            buf.pop();
+            buf.push("config.yml");
+            buf
+        },
+        PathBuf::from,
+    );
 
     println!("{}", config_path.clone().into_os_string().to_string_lossy());
 
@@ -141,7 +146,7 @@ async fn main() {
 
     WalkDir::new(&c.input_path)
         .into_iter()
-        .filter_map(|f| f.ok())
+        .filter_map(Result::ok)
         .filter(|f| is_png(f.path()))
         .for_each(|from| {
             let from = from.path().to_owned();
@@ -152,7 +157,7 @@ async fn main() {
             });
         });
 
-    if let model::Mode::Oneshot = c.mode {
+    if c.mode == model::Mode::Oneshot {
         return;
     }
 
