@@ -70,10 +70,11 @@ jobs:
               VERSION_NAME=${VERSION_NAME:1}
           fi
           echo "$VERSION_NAME" > png2mozjpegd/VERSION.txt
+          echo "png2mozjpegd\npause" > png2mozjpegd/png2mozjpegd-debug.bat
           cp config.yml CREDITS LICENSE README.md png2mozjpegd/
           cp target/x86_64-pc-windows-gnu/release/png2mozjpegd.exe png2mozjpegd/
           zip -r png2mozjpegd-windows.zip png2mozjpegd
-          rm png2mozjpegd/*.exe
+          rm png2mozjpegd/*.{exe,bat}
           cp target/x86_64-unknown-linux-musl/release/png2mozjpegd png2mozjpegd/
           zip -r png2mozjpegd-linux.zip png2mozjpegd
 
