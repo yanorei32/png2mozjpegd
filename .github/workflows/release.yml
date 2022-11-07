@@ -84,7 +84,7 @@ jobs:
           fi
           echo "$VERSION_NAME" > png2mozjpegd/VERSION.txt
           printf "png2mozjpegd\r\npause\r\n" > png2mozjpegd/png2mozjpegd-debug.bat
-          cp config.yml CREDITS LICENSE README.md png2mozjpegd/
+          cp config.yml LICENSE README.md png2mozjpegd/
           cp target/x86_64-pc-windows-gnu/release/png2mozjpegd.exe png2mozjpegd/
           zip -r png2mozjpegd-windows.zip png2mozjpegd
           rm png2mozjpegd/*.{exe,bat}
