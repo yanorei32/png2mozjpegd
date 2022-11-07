@@ -62,6 +62,7 @@ jobs:
           args: --release --target x86_64-pc-windows-gnu
 
       - run: |
+          mkdir png2mozjpegd
           cargo license \
             --authors \
             --do-not-bundle \
@@ -69,7 +70,6 @@ jobs:
             --avoid-build-deps \
             --filter-platform x86_64-pc-windows-gnu \
               > png2mozjpegd/CREDITS
-          mkdir png2mozjpegd
           VERSION_NAME=${GITHUB_REF##*/}
           if [[ $VERSION_NAME == "master" ]]; then
               VERSION_NAME=$(git rev-parse --short HEAD)
