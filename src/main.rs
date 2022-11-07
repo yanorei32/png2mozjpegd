@@ -66,15 +66,6 @@ fn process_image(from: &Path, into: &Path) {
         return;
     }
 
-    let im = image::open(from).expect("Failed to open original file");
-
-    std::fs::create_dir_all(
-        PathBuf::from(into)
-            .parent()
-            .expect("Failed to get parent directory"),
-    )
-    .expect("Failed to create parent directory");
-
     let c = CONFIG.get().unwrap();
 
     println!(
@@ -85,6 +76,15 @@ fn process_image(from: &Path, into: &Path) {
             .to_str()
             .unwrap()
     );
+
+    let im = image::open(from).expect("Failed to open original file");
+
+    std::fs::create_dir_all(
+        PathBuf::from(into)
+            .parent()
+            .expect("Failed to get parent directory"),
+    )
+    .expect("Failed to create parent directory");
 
     let dimensions = calc_new_dimensions(im.dimensions(), c.long_side_limit);
     let im = im.thumbnail(dimensions.0, dimensions.1);
