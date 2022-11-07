@@ -63,6 +63,13 @@ jobs:
 
       - run: |
           mkdir png2mozjpegd
+          VERSION_NAME=${GITHUB_REF##*/}
+          if [[ $VERSION_NAME == "master" ]]; then
+              VERSION_NAME=$(git rev-parse --short HEAD)
+          elif [[ ${VERSION_NAME:0:1} == "v" ]]; then
+              VERSION_NAME=${VERSION_NAME:1}
+          fi
+          echo "$VERSION_NAME" > png2mozjpegd/VERSION.txt
           cp config.yml CREDITS LICENSE README.md png2mozjpegd/
           cp target/x86_64-pc-windows-gnu/release/png2mozjpegd.exe png2mozjpegd/
           zip -r png2mozjpegd-windows.zip png2mozjpegd
