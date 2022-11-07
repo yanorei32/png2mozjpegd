@@ -16,3 +16,9 @@ once_cell = "1.16.0"
 walkdir = "2.3.2"
 dirs = "4.0.0"
 num_cpus = "1.14.0"
+
+[profile.release]
+strip = true
+opt-level = "z"
+lto = true
+codegen-units = 1
