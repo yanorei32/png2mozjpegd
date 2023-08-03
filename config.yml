@@ -16,7 +16,7 @@ quality: 95
 #   0: unlimit
 long_side_limit: 0
 
-# How many wokers
+# How many workers
 #   0: auto (same as logical cores count)
 thread_count: 0
 
