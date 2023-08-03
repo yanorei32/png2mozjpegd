@@ -7,7 +7,7 @@ edition = "2021"
 
 [dependencies]
 image = { version = "0.24.6", default-features = false, features = [ "png" ] }
-mozjpeg = "0.9.4"
+mozjpeg = "0.9.6"
 notify = "6.0.0"
 tokio = { version = "1.28.2", features = ["rt-multi-thread", "time", "macros"] , default-features = false}
 serde = { version = "1.0.164" , features = ["derive"] }
