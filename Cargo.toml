@@ -6,7 +6,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-image = { version = "0.24.6", default-features = false, features = [ "png" ] }
+image = { version = "0.24.7", default-features = false, features = [ "png" ] }
 mozjpeg = "0.9.6"
 notify = "6.0.1"
 tokio = { version = "1.29.1", features = ["rt-multi-thread", "time", "macros"] , default-features = false}
