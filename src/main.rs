@@ -96,11 +96,10 @@ fn process_image(from: &Path, into: &Path) {
         comp.set_size(dimensions.0 as usize, dimensions.1 as usize);
         comp.set_quality(c.quality);
         comp.set_color_space(mozjpeg::ColorSpace::JCS_YCbCr);
-        comp.set_mem_dest();
-        comp.start_compress();
-        assert!(comp.write_scanlines(&im));
-        comp.finish_compress();
-        comp.data_to_vec().unwrap()
+
+        let mut comp = comp.start_compress(Vec::new()).unwrap();
+        comp.write_scanlines(&im).unwrap();
+        comp.finish().unwrap()
     })
     .expect("MozJPEG Fail");
 
