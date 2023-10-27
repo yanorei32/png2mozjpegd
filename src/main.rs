@@ -175,7 +175,7 @@ async fn main() {
         let event = match res {
             Ok(v) => v,
             Err(e) => {
-                eprintln!("Watch Error: {:?}", e);
+                eprintln!("Watch Error: {e:?}");
                 continue;
             }
         };
