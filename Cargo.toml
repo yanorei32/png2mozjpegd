@@ -11,7 +11,7 @@ mozjpeg = "0.10.7"
 notify = "6.1.1"
 tokio = { version = "1.36.0", features = ["rt-multi-thread", "time", "macros"] , default-features = false}
 serde = { version = "1.0.197" , features = ["derive"] }
-serde_yaml = "0.9.32"
+serde_yaml = "0.9.33"
 once_cell = "1.19.0"
 walkdir = "2.5.0"
 dirs = "5.0.1"
