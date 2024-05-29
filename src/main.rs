@@ -181,7 +181,7 @@ async fn main() {
         };
 
         let EventKind::Create(_) = event.kind else {
-            continue
+            continue;
         };
 
         event
