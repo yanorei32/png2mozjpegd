@@ -8,7 +8,7 @@ edition = "2021"
 [dependencies]
 image = { version = "0.25.1", default-features = false, features = [ "png" ] }
 mozjpeg = "0.10.7"
-notify = "6.1.1"
+notify = "7.0.0"
 tokio = { version = "1.37.0", features = ["rt-multi-thread", "time", "macros"] , default-features = false}
 serde = { version = "1.0.200" , features = ["derive"] }
 serde_yaml = "0.9.34"
